@@ -1,0 +1,13 @@
+.git
+.gitignore
+.gemini
+.env
+tmp_*.log
+*.err.log
+*.out.log
+playground
+test
+**/*_test.go
+README.md
+ROADMAP.md
+*.md

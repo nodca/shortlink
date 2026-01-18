@@ -1,0 +1,370 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import ShortenerForm from '../components/ShortenerForm.astro';
+import ResultCard from '../components/ResultCard.astro';
+import AuthModal from '../components/AuthModal.astro';
+import LinkList from '../components/LinkList.astro';
+import QRCodeModal from '../components/QRCodeModal.astro';
+import StatsModal from '../components/StatsModal.astro';
+---
+
+<Layout>
+  <Header />
+
+  <main>
+    <ShortenerForm />
+    <ResultCard />
+    <LinkList />
+  </main>
+
+  <Footer />
+
+  <AuthModal />
+  <QRCodeModal />
+  <StatsModal />
+</Layout>
+
+<script>
+  import QRCode from 'qrcode';
+
+  // ============================================
+  // Configuration
+  // ============================================
+  const API_BASE = '/api/v1';
+
+  // ============================================
+  // State
+  // ============================================
+  let token = localStorage.getItem('token') || '';
+  let currentUser: { user_id: string } | null = null;
+
+  // ============================================
+  // DOM Elements
+  // ============================================
+  const authButtons = document.getElementById('auth-buttons');
+  const userPanel = document.getElementById('user-panel');
+  const usernameEl = document.getElementById('username');
+  const btnLogin = document.getElementById('btn-login');
+  const btnRegister = document.getElementById('btn-register');
+  const btnLogout = document.getElementById('btn-logout');
+
+  const loginModal = document.getElementById('login-modal');
+  const registerModal = document.getElementById('register-modal');
+  const loginForm = document.getElementById('login-form') as HTMLFormElement;
+  const registerForm = document.getElementById('register-form') as HTMLFormElement;
+  const loginError = document.getElementById('login-error');
+  const registerError = document.getElementById('register-error');
+
+  const shortenForm = document.getElementById('shorten-form') as HTMLFormElement;
+  const urlInput = document.getElementById('url-input') as HTMLInputElement;
+  const codeInput = document.getElementById('code-input') as HTMLInputElement;
+  const submitBtn = document.getElementById('submit-btn');
+  const formError = document.getElementById('form-error');
+  const errorText = document.getElementById('error-text');
+
+  const resultCard = document.getElementById('result-card');
+  const shortUrlLink = document.getElementById('short-url-link') as HTMLAnchorElement;
+  const shortUrlText = document.getElementById('short-url-text');
+  const originalUrl = document.getElementById('original-url');
+  const qrcodeCanvas = document.getElementById('qrcode-canvas') as HTMLCanvasElement;
+
+  const linkListSection = document.getElementById('link-list-section');
+
+  // ============================================
+  // Utility Functions
+  // ============================================
+  function getAuthHeaders(): HeadersInit {
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }
+
+  function showError(el: HTMLElement | null, message: string) {
+    if (el) {
+      el.textContent = message;
+      el.classList.remove('hidden');
+    }
+  }
+
+  function hideError(el: HTMLElement | null) {
+    if (el) {
+      el.textContent = '';
+      el.classList.add('hidden');
+    }
+  }
+
+  // ============================================
+  // QR Code Generation
+  // ============================================
+  async function generateQRCode(canvas: HTMLCanvasElement, text: string, size: number = 128) {
+    try {
+      await QRCode.toCanvas(canvas, text, {
+        width: size,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        }
+      });
+    } catch (err) {
+      console.error('QR code generation failed:', err);
+    }
+  }
+
+  // Expose for other components
+  (window as any).generateQRCode = generateQRCode;
+
+  // ============================================
+  // Auth Functions
+  // ============================================
+  function updateAuthUI() {
+    if (token && currentUser) {
+      authButtons?.classList.add('hidden');
+      userPanel?.classList.remove('hidden');
+      userPanel?.classList.add('flex');
+      if (usernameEl) usernameEl.textContent = currentUser.user_id;
+      linkListSection?.classList.remove('hidden');
+      loadMyLinks();
+    } else {
+      authButtons?.classList.remove('hidden');
+      userPanel?.classList.add('hidden');
+      userPanel?.classList.remove('flex');
+      linkListSection?.classList.add('hidden');
+    }
+  }
+
+  async function checkAuth() {
+    if (!token) return;
+
+    try {
+      const resp = await fetch(`${API_BASE}/users/me`, {
+        headers: getAuthHeaders()
+      });
+
+      if (resp.ok) {
+        currentUser = await resp.json();
+        updateAuthUI();
+      } else {
+        logout();
+      }
+    } catch {
+      logout();
+    }
+  }
+
+  function logout() {
+    token = '';
+    currentUser = null;
+    localStorage.removeItem('token');
+    updateAuthUI();
+  }
+
+  // ============================================
+  // Auth Event Handlers
+  // ============================================
+  btnLogin?.addEventListener('click', () => {
+    loginModal?.classList.add('show');
+    hideError(loginError);
+    (document.getElementById('login-username') as HTMLInputElement).value = '';
+    (document.getElementById('login-password') as HTMLInputElement).value = '';
+  });
+
+  btnRegister?.addEventListener('click', () => {
+    registerModal?.classList.add('show');
+    hideError(registerError);
+    (document.getElementById('register-username') as HTMLInputElement).value = '';
+    (document.getElementById('register-password') as HTMLInputElement).value = '';
+  });
+
+  btnLogout?.addEventListener('click', () => {
+    logout();
+  });
+
+  loginForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError(loginError);
+
+    const username = (document.getElementById('login-username') as HTMLInputElement).value.trim();
+    const password = (document.getElementById('login-password') as HTMLInputElement).value;
+
+    try {
+      const resp = await fetch(`${API_BASE}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await resp.json().catch(() => ({}));
+
+      if (!resp.ok) {
+        showError(loginError, data?.Message || data?.message || '登录失败');
+        return;
+      }
+
+      token = data.token;
+      localStorage.setItem('token', token);
+      loginModal?.classList.remove('show');
+      await checkAuth();
+    } catch {
+      showError(loginError, '网络错误');
+    }
+  });
+
+  registerForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError(registerError);
+
+    const username = (document.getElementById('register-username') as HTMLInputElement).value.trim();
+    const password = (document.getElementById('register-password') as HTMLInputElement).value;
+
+    try {
+      const resp = await fetch(`${API_BASE}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await resp.json().catch(() => ({}));
+
+      if (!resp.ok) {
+        showError(registerError, data?.Message || data?.message || '注册失败');
+        return;
+      }
+
+      registerModal?.classList.remove('show');
+      // Auto login after register
+      loginModal?.classList.add('show');
+      (document.getElementById('login-username') as HTMLInputElement).value = username;
+      (document.getElementById('login-password') as HTMLInputElement).focus();
+    } catch {
+      showError(registerError, '网络错误');
+    }
+  });
+
+  // ============================================
+  // Shortlink Functions
+  // ============================================
+  shortenForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError(formError);
+    resultCard?.classList.add('hidden');
+
+    const url = urlInput?.value.trim();
+    if (!url) return;
+    const code = codeInput?.value.trim();
+
+    if (submitBtn) {
+      submitBtn.setAttribute('disabled', 'true');
+      submitBtn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        生成中...
+      `;
+    }
+
+    try {
+      const payload: any = { url };
+      if (code) payload.code = code;
+
+      const resp = await fetch(`${API_BASE}/shortlinks`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload)
+      });
+
+      const data = await resp.json().catch(() => ({}));
+
+      if (!resp.ok) {
+        showError(formError, data?.Message || data?.message || '生成失败');
+        if (errorText) errorText.textContent = data?.Message || data?.message || '生成失败';
+        return;
+      }
+
+      // Show result
+      const shortUrl = data.short_url || `${window.location.origin}/${data.code}`;
+      if (shortUrlText) shortUrlText.textContent = shortUrl;
+      if (shortUrlLink) shortUrlLink.href = shortUrl;
+      if (originalUrl) originalUrl.textContent = url;
+
+      // Generate QR code
+      if (qrcodeCanvas) {
+        await generateQRCode(qrcodeCanvas, shortUrl, 128);
+      }
+
+      resultCard?.classList.remove('hidden');
+
+      // Refresh link list if logged in
+      if (token && currentUser) {
+        loadMyLinks();
+      }
+
+      // Clear code input after success to avoid accidental reuse/conflict
+      if (codeInput) codeInput.value = '';
+    } catch {
+      showError(formError, '网络错误或服务不可用');
+      if (errorText) errorText.textContent = '网络错误或服务不可用';
+    } finally {
+      if (submitBtn) {
+        submitBtn.removeAttribute('disabled');
+        submitBtn.textContent = '生成';
+      }
+    }
+  });
+
+  // ============================================
+  // My Links Functions
+  // ============================================
+  async function loadMyLinks() {
+    if (!token) return;
+
+    (window as any).showLinkListLoading?.();
+
+    try {
+      const resp = await fetch(`${API_BASE}/users/mine`, {
+        headers: getAuthHeaders()
+      });
+
+      if (!resp.ok) {
+        (window as any).renderLinkList?.([]);
+        return;
+      }
+
+      const data = await resp.json();
+      (window as any).renderLinkList?.(data || []);
+    } catch {
+      (window as any).renderLinkList?.([]);
+    }
+  }
+
+  // Remove shortlink from user's list
+  (window as any).removeShortlink = async function(code: string) {
+    if (!confirm(`确定要从列表中移除短链 ${code} 吗？`)) return;
+
+    try {
+      const resp = await fetch(`${API_BASE}/users/mine/${code}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+
+      if (resp.ok) {
+        loadMyLinks();
+      } else {
+        const data = await resp.json().catch(() => ({}));
+        alert(data?.Message || data?.message || '移除失败');
+      }
+    } catch {
+      alert('网络错误');
+    }
+  };
+
+  // ============================================
+  // Initialize
+  // ============================================
+  checkAuth();
+</script>

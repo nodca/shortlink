@@ -1,0 +1,235 @@
+---
+// AuthModal component - login and register modals
+---
+
+<!-- Login Modal -->
+<div id="login-modal" class="modal-overlay backdrop-blur-sm bg-black/40">
+  <div class="modal-content !p-0 overflow-hidden border border-white/10 shadow-2xl">
+    <div class="p-8 bg-white dark:bg-slate-900">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">欢迎回来</h2>
+          <p class="text-xs text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest">登录您的账户</p>
+        </div>
+        <button type="button" class="modal-close p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="login-form" class="space-y-5">
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+            用户名
+          </label>
+          <input
+            type="text"
+            id="login-username"
+            class="input !bg-gray-50/50 dark:!bg-white/5 border-gray-100 dark:border-white/5 focus:!bg-white dark:focus:!bg-slate-800"
+            placeholder="输入用户名"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+            密码
+          </label>
+          <div class="relative">
+            <input
+              type="password"
+              id="login-password"
+              class="input !bg-gray-50/50 dark:!bg-white/5 border-gray-100 dark:border-white/5 focus:!bg-white dark:focus:!bg-slate-800 pr-12"
+              placeholder="输入密码"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-password absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary-600 transition-colors"
+            >
+              <svg class="w-5 h-5 eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="w-5 h-5 eye-closed hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="login-error" class="hidden p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-xl text-xs text-red-600 dark:text-red-400 font-medium"></div>
+
+        <button type="submit" class="btn-primary w-full py-3.5 shadow-lg shadow-primary-500/20">
+          登 录
+        </button>
+      </form>
+
+      <div class="mt-8 text-center">
+        <p class="text-sm text-gray-500 dark:text-slate-400">
+          还没有账号？
+          <button type="button" id="switch-to-register" class="font-bold text-primary-600 dark:text-primary-400 hover:underline ml-1">
+            注册新账号
+          </button>
+        </p>
+      </div>
+    </div>
+
+    <div class="px-8 py-5 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-white/5">
+      <button type="button" id="use-without-login" class="w-full text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em] hover:text-gray-900 dark:hover:text-white transition-colors">
+        无需登录，直接使用
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Register Modal -->
+<div id="register-modal" class="modal-overlay backdrop-blur-sm bg-black/40">
+  <div class="modal-content !p-0 overflow-hidden border border-white/10 shadow-2xl">
+    <div class="p-8 bg-white dark:bg-slate-900">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">加入 Days</h2>
+          <p class="text-xs text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest">开启您的短链之旅</p>
+        </div>
+        <button type="button" class="modal-close p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="register-form" class="space-y-5">
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+            用户名
+          </label>
+          <input
+            type="text"
+            id="register-username"
+            class="input !bg-gray-50/50 dark:!bg-white/5 border-gray-100 dark:border-white/5 focus:!bg-white dark:focus:!bg-slate-800"
+            placeholder="3-32个字符"
+            minlength="3"
+            maxlength="32"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+            设置密码
+          </label>
+          <div class="relative">
+            <input
+              type="password"
+              id="register-password"
+              class="input !bg-gray-50/50 dark:!bg-white/5 border-gray-100 dark:border-white/5 focus:!bg-white dark:focus:!bg-slate-800 pr-12"
+              placeholder="8-72个字符"
+              minlength="8"
+              maxlength="72"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-password absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary-600 transition-colors"
+            >
+              <svg class="w-5 h-5 eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="w-5 h-5 eye-closed hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="register-error" class="hidden p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-xl text-xs text-red-600 dark:text-red-400 font-medium"></div>
+
+        <button type="submit" class="btn-primary w-full py-3.5 shadow-lg shadow-primary-500/20">
+          注 册
+        </button>
+      </form>
+
+      <div class="mt-8 text-center">
+        <p class="text-sm text-gray-500 dark:text-slate-400">
+          已有账号？
+          <button type="button" id="switch-to-login" class="font-bold text-primary-600 dark:text-primary-400 hover:underline ml-1">
+            返回登录
+          </button>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Modal controls
+  const loginModal = document.getElementById('login-modal');
+  const registerModal = document.getElementById('register-modal');
+
+  // Close buttons
+  document.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', () => {
+      loginModal?.classList.remove('show');
+      registerModal?.classList.remove('show');
+    });
+  });
+
+  // Click overlay to close
+  [loginModal, registerModal].forEach(modal => {
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('show');
+      }
+    });
+  });
+
+  // Switch between modals
+  document.getElementById('switch-to-register')?.addEventListener('click', () => {
+    loginModal?.classList.remove('show');
+    registerModal?.classList.add('show');
+  });
+
+  document.getElementById('switch-to-login')?.addEventListener('click', () => {
+    registerModal?.classList.remove('show');
+    loginModal?.classList.add('show');
+  });
+
+  // Use without login
+  document.getElementById('use-without-login')?.addEventListener('click', () => {
+    loginModal?.classList.remove('show');
+  });
+
+  // Toggle password visibility
+  document.querySelectorAll('.toggle-password').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = btn.parentElement?.querySelector('input');
+      const eyeOpen = btn.querySelector('.eye-open');
+      const eyeClosed = btn.querySelector('.eye-closed');
+
+      if (input?.type === 'password') {
+        input.type = 'text';
+        eyeOpen?.classList.add('hidden');
+        eyeClosed?.classList.remove('hidden');
+      } else if (input) {
+        input.type = 'password';
+        eyeOpen?.classList.remove('hidden');
+        eyeClosed?.classList.add('hidden');
+      }
+    });
+  });
+
+  // ESC to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      loginModal?.classList.remove('show');
+      registerModal?.classList.remove('show');
+    }
+  });
+</script>

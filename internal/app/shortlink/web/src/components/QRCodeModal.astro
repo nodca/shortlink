@@ -1,0 +1,91 @@
+---
+// QRCodeModal component - displays QR code in a modal
+---
+
+<div id="qr-modal" class="modal-overlay backdrop-blur-sm bg-black/40">
+  <div class="modal-content !p-0 overflow-hidden border border-white/10 shadow-2xl max-w-sm">
+    <div class="p-8 bg-white dark:bg-slate-900 text-center">
+      <div class="flex items-center justify-between mb-8 text-left">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">二维码</h2>
+          <p class="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">扫描或下载分享</p>
+        </div>
+        <button type="button" id="qr-modal-close" class="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex justify-center mb-6">
+        <div class="bg-white p-3 rounded-2xl shadow-soft border border-gray-100">
+          <canvas id="qr-modal-canvas" width="220" height="220"></canvas>
+        </div>
+      </div>
+
+      <p id="qr-modal-url" class="text-sm font-medium text-primary-600 dark:text-primary-400 mb-8 break-all"></p>
+
+      <button type="button" id="qr-modal-download" class="btn-primary w-full py-3.5 shadow-lg shadow-primary-500/20">
+        <span class="flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          下载高清二维码
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const qrModal = document.getElementById('qr-modal');
+  const qrModalCanvas = document.getElementById('qr-modal-canvas') as HTMLCanvasElement;
+  const qrModalUrl = document.getElementById('qr-modal-url');
+  const qrModalClose = document.getElementById('qr-modal-close');
+  const qrModalDownload = document.getElementById('qr-modal-download');
+
+  let currentCode = '';
+
+  // Close modal
+  qrModalClose?.addEventListener('click', () => {
+    qrModal?.classList.remove('show');
+  });
+
+  qrModal?.addEventListener('click', (e) => {
+    if (e.target === qrModal) {
+      qrModal.classList.remove('show');
+    }
+  });
+
+  // Download QR
+  qrModalDownload?.addEventListener('click', () => {
+    if (!qrModalCanvas) return;
+    const link = document.createElement('a');
+    link.download = `qrcode-${currentCode || 'shortlink'}.png`;
+    link.href = qrModalCanvas.toDataURL('image/png');
+    link.click();
+  });
+
+  // ESC to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      qrModal?.classList.remove('show');
+    }
+  });
+
+  // Show QR modal (called from LinkList)
+  (window as any).showQRModal = function(url: string, code: string) {
+    currentCode = code;
+    if (qrModalUrl) qrModalUrl.textContent = url;
+
+    // Generate QR code
+    if (qrModalCanvas && (window as any).generateQRCode) {
+      (window as any).generateQRCode(qrModalCanvas, url, 200);
+    }
+
+    qrModal?.classList.add('show');
+  };
+</script>

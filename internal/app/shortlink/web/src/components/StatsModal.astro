@@ -1,0 +1,236 @@
+---
+// StatsModal component - displays click statistics
+---
+
+<div id="stats-modal" class="modal-overlay backdrop-blur-sm bg-black/40">
+  <div class="modal-content !p-0 overflow-hidden border border-white/10 shadow-2xl max-w-2xl">
+    <div class="p-8 bg-white dark:bg-slate-900">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">流量统计</h2>
+          <p class="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest" id="stats-target-code">正在加载...</p>
+        </div>
+        <button type="button" id="stats-modal-close" class="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Stats Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="p-5 bg-primary-50 dark:bg-primary-900/10 rounded-2xl border border-primary-100 dark:border-primary-900/30">
+          <p class="text-[10px] font-bold text-primary-600 dark:text-primary-400 uppercase tracking-widest mb-1">总点击量</p>
+          <p class="text-3xl font-black text-primary-700 dark:text-primary-300" id="total-clicks">-</p>
+        </div>
+        <div class="p-5 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+          <p class="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">活跃程度</p>
+          <p class="text-xl font-bold text-gray-700 dark:text-slate-300">正常</p>
+        </div>
+        <div class="p-5 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+          <p class="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">最后访问</p>
+          <p class="text-sm font-bold text-gray-700 dark:text-slate-300" id="last-click-time">从未</p>
+        </div>
+      </div>
+
+      <!-- Click Details Table -->
+      <div>
+        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-primary-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20v-6M6 20V10M18 20V4"></path>
+          </svg>
+          最近访问详情
+        </h3>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest border-b border-gray-100 dark:border-white/5">
+                <th class="pb-3 px-2">访问时间</th>
+                <th class="pb-3 px-2">来源 (Referer)</th>
+                <th class="pb-3 px-2">设备/UA</th>
+              </tr>
+            </thead>
+            <tbody id="stats-list" class="divide-y divide-gray-50 dark:divide-white/5">
+              <!-- Stats rows go here -->
+            </tbody>
+          </table>
+          
+          <!-- Load More -->
+          <div id="stats-load-more-container" class="hidden py-4 text-center border-t border-gray-50 dark:border-white/5">
+            <button id="btn-stats-load-more" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline">
+              加载更多记录
+            </button>
+          </div>
+
+          <div id="stats-empty" class="hidden py-12 text-center text-gray-400 dark:text-slate-500 text-xs italic">
+            暂无点击数据
+          </div>
+          <div id="stats-loading" class="py-12 text-center">
+            <div class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-primary-500 border-t-transparent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const statsModal = document.getElementById('stats-modal');
+  const statsClose = document.getElementById('stats-modal-close');
+  const statsTargetCode = document.getElementById('stats-target-code');
+  const totalClicksEl = document.getElementById('total-clicks');
+  const lastClickTimeEl = document.getElementById('last-click-time');
+  const statsList = document.getElementById('stats-list');
+  const statsEmpty = document.getElementById('stats-empty');
+  const statsLoading = document.getElementById('stats-loading');
+  const loadMoreContainer = document.getElementById('stats-load-more-container');
+  const loadMoreBtn = document.getElementById('btn-stats-load-more') as HTMLButtonElement;
+
+  let currentCode = '';
+  let nextCursor: string | null = null;
+  const LIMIT = 20;
+
+  // Helper to format UA
+  function parseUA(ua: string) {
+    if (!ua) return '未知设备';
+    const lUA = ua.toLowerCase();
+    if (lUA.includes('iphone')) return 'iPhone';
+    if (lUA.includes('android')) return 'Android';
+    if (lUA.includes('windows')) return 'Windows';
+    if (lUA.includes('macintosh')) return 'macOS';
+    return 'Desktop';
+  }
+
+  // Format date
+  function formatFullDate(dateStr: string) {
+    const date = new Date(dateStr);
+    return date.toLocaleString('zh-CN', {
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  }
+
+  function renderRows(clicks: any[], append = false) {
+    if (!statsList) return;
+    if (!append) statsList.innerHTML = '';
+    
+    clicks.forEach((click: any) => {
+      const row = document.createElement('tr');
+      row.className = 'text-xs hover:bg-gray-50 dark:hover:bg-white/5 transition-colors animate-fade-in';
+      row.innerHTML = `
+        <td class="py-4 px-2 text-gray-600 dark:text-slate-400">${formatFullDate(click.clicked_at)}</td>
+        <td class="py-4 px-2 text-gray-500 dark:text-slate-500 truncate max-w-[150px]" title="${click.referer || '直接访问'}">${click.referer || '<span class="opacity-30">直接访问</span>'}</td>
+        <td class="py-4 px-2">
+          <div class="flex flex-col">
+            <span class="text-gray-700 dark:text-slate-300 font-medium">${parseUA(click.user_agent)}</span>
+            <span class="text-[9px] text-gray-400 dark:text-slate-500 truncate max-w-[120px]" title="${click.user_agent}">${click.user_agent}</span>
+          </div>
+        </td>
+      `;
+      statsList.appendChild(row);
+    });
+  }
+
+  async function fetchStats(code: string, cursor: string | null = null) {
+    const token = localStorage.getItem('token');
+    let url = `/api/v1/users/shortlinks/${code}/stats?limit=${LIMIT}`;
+    if (cursor) url += `&cursor=${cursor}`;
+
+    const resp = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!resp.ok) throw new Error('Failed to fetch stats');
+    return await resp.json();
+  }
+
+  // Load More Event
+  loadMoreBtn?.addEventListener('click', async () => {
+    if (!currentCode || !nextCursor) return;
+    
+    loadMoreBtn.disabled = true;
+    loadMoreBtn.textContent = '加载中...';
+    
+    try {
+      const data = await fetchStats(currentCode, nextCursor);
+      renderRows(data.recent_clicks, true);
+      nextCursor = data.next_cursor || null;
+      
+      if (!nextCursor) {
+        loadMoreContainer?.classList.add('hidden');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (nextCursor) {
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.textContent = '加载更多记录';
+      }
+    }
+  });
+
+  // Close modal
+  statsClose?.addEventListener('click', () => {
+    statsModal?.classList.remove('show');
+  });
+
+  statsModal?.addEventListener('click', (e) => {
+    if (e.target === statsModal) {
+      statsModal.classList.remove('show');
+    }
+  });
+
+  // ESC to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      statsModal?.classList.remove('show');
+    }
+  });
+
+  // Show Stats Modal
+  (window as any).showStatsModal = async function(code: string) {
+    currentCode = code;
+    nextCursor = null;
+    if (statsTargetCode) statsTargetCode.textContent = `CODE: ${code}`;
+    statsModal?.classList.add('show');
+    
+    // Reset view
+    if (statsList) statsList.innerHTML = '';
+    if (totalClicksEl) totalClicksEl.textContent = '-';
+    if (lastClickTimeEl) lastClickTimeEl.textContent = '正在获取...';
+    statsLoading?.classList.remove('hidden');
+    statsEmpty?.classList.add('hidden');
+    loadMoreContainer?.classList.add('hidden');
+
+    try {
+      const data = await fetchStats(code);
+      
+      // Update Overview
+      if (totalClicksEl) totalClicksEl.textContent = data.total_clicks.toString();
+      
+      if (data.recent_clicks && data.recent_clicks.length > 0) {
+        if (lastClickTimeEl) lastClickTimeEl.textContent = formatFullDate(data.recent_clicks[0].clicked_at);
+        renderRows(data.recent_clicks);
+        
+        nextCursor = data.next_cursor || null;
+        if (nextCursor) {
+          loadMoreContainer?.classList.remove('hidden');
+        }
+      } else {
+        if (lastClickTimeEl) lastClickTimeEl.textContent = '从未';
+        statsEmpty?.classList.remove('hidden');
+      }
+
+    } catch (err) {
+      console.error(err);
+      if (lastClickTimeEl) lastClickTimeEl.textContent = '获取失败';
+    } finally {
+      statsLoading?.classList.add('hidden');
+    }
+  };
+</script>

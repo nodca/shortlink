@@ -1,0 +1,22 @@
+# Binaries / build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Coverage
+coverage.out
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Frontend build artifacts (generated, not committed)
+internal/app/shortlink/httpapi/static/
+internal/app/shortlink/web/node_modules/
+internal/app/shortlink/web/dist/
+internal/app/shortlink/web/.astro/
+

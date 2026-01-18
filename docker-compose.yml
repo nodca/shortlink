@@ -1,0 +1,62 @@
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP (optional)
+  postgres_db:
+    image: postgres:18
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: days
+      POSTGRES_PASSWORD: days
+      POSTGRES_DB: days
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "days"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      # Postgres 18+ 建议只挂载到 /var/lib/postgresql（内部会用“带大版本号”的子目录存数据，方便升级）
+      - pgdata18:/var/lib/postgresql
+    restart: unless-stopped
+
+  kafka:
+    image: apache/kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+      # 单节点配置 - 副本因子必须为1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    # 短链项目里 Redis 主要用于缓存/限流：允许丢数据（重启后可回源 DB / 重新计数），优先吞吐与稳定尾延迟。
+    # AOF 会带来额外写放大与 IO 抖动；默认关闭。
+    command: redis-server --appendonly no
+    restart: unless-stopped
+
+volumes:
+  pgdata18:
+  kafka_data:
+  redis_data:

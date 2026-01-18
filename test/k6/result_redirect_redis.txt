@@ -1,0 +1,245 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: test\k6\redirect_test.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 50 max VUs, 1m30s max duration (incl. graceful stop):
+              * constant_load: 50 looping VUs for 1m0s (gracefulStop: 30s)
+
+time="2026-01-17T21:55:21+08:00" level=info msg="预创建 20 个短链" source=console
+
+running (0m01.0s), 50/50 VUs, 3727 complete and 0 interrupted iterations
+constant_load   [   1% ] 50 VUs  0m00.8s/1m0s
+
+running (0m02.0s), 50/50 VUs, 8694 complete and 0 interrupted iterations
+constant_load   [   3% ] 50 VUs  0m01.8s/1m0s
+
+running (0m03.0s), 50/50 VUs, 13798 complete and 0 interrupted iterations
+constant_load   [   5% ] 50 VUs  0m02.8s/1m0s
+
+running (0m04.0s), 50/50 VUs, 19724 complete and 0 interrupted iterations
+constant_load   [   6% ] 50 VUs  0m03.8s/1m0s
+
+running (0m05.0s), 50/50 VUs, 24367 complete and 0 interrupted iterations
+constant_load   [   8% ] 50 VUs  0m04.8s/1m0s
+
+running (0m06.0s), 50/50 VUs, 28378 complete and 0 interrupted iterations
+constant_load   [  10% ] 50 VUs  0m05.8s/1m0s
+
+running (0m07.0s), 50/50 VUs, 33815 complete and 0 interrupted iterations
+constant_load   [  11% ] 50 VUs  0m06.8s/1m0s
+
+running (0m08.0s), 50/50 VUs, 40397 complete and 0 interrupted iterations
+constant_load   [  13% ] 50 VUs  0m07.8s/1m0s
+
+running (0m09.0s), 50/50 VUs, 45898 complete and 0 interrupted iterations
+constant_load   [  15% ] 50 VUs  0m08.9s/1m0s
+
+running (0m10.0s), 50/50 VUs, 52143 complete and 0 interrupted iterations
+constant_load   [  16% ] 50 VUs  0m09.8s/1m0s
+
+running (0m11.0s), 50/50 VUs, 59205 complete and 0 interrupted iterations
+constant_load   [  18% ] 50 VUs  0m10.8s/1m0s
+
+running (0m12.0s), 50/50 VUs, 64936 complete and 0 interrupted iterations
+constant_load   [  20% ] 50 VUs  0m11.8s/1m0s
+
+running (0m13.0s), 50/50 VUs, 72021 complete and 0 interrupted iterations
+constant_load   [  21% ] 50 VUs  0m12.8s/1m0s
+
+running (0m14.0s), 50/50 VUs, 78894 complete and 0 interrupted iterations
+constant_load   [  23% ] 50 VUs  0m13.8s/1m0s
+
+running (0m15.0s), 50/50 VUs, 86322 complete and 0 interrupted iterations
+constant_load   [  25% ] 50 VUs  0m14.8s/1m0s
+
+running (0m16.0s), 50/50 VUs, 91979 complete and 0 interrupted iterations
+constant_load   [  26% ] 50 VUs  0m15.8s/1m0s
+
+running (0m17.0s), 50/50 VUs, 97188 complete and 0 interrupted iterations
+constant_load   [  28% ] 50 VUs  0m16.8s/1m0s
+
+running (0m18.0s), 50/50 VUs, 103035 complete and 0 interrupted iterations
+constant_load   [  30% ] 50 VUs  0m17.8s/1m0s
+
+running (0m19.0s), 50/50 VUs, 109029 complete and 0 interrupted iterations
+constant_load   [  31% ] 50 VUs  0m18.8s/1m0s
+
+running (0m20.0s), 50/50 VUs, 115182 complete and 0 interrupted iterations
+constant_load   [  33% ] 50 VUs  0m19.8s/1m0s
+
+running (0m21.0s), 50/50 VUs, 120267 complete and 0 interrupted iterations
+constant_load   [  35% ] 50 VUs  0m20.8s/1m0s
+
+running (0m22.0s), 50/50 VUs, 127866 complete and 0 interrupted iterations
+constant_load   [  36% ] 50 VUs  0m21.9s/1m0s
+
+running (0m23.0s), 50/50 VUs, 134617 complete and 0 interrupted iterations
+constant_load   [  38% ] 50 VUs  0m22.8s/1m0s
+
+running (0m24.0s), 50/50 VUs, 141591 complete and 0 interrupted iterations
+constant_load   [  40% ] 50 VUs  0m23.8s/1m0s
+
+running (0m25.0s), 50/50 VUs, 148801 complete and 0 interrupted iterations
+constant_load   [  41% ] 50 VUs  0m24.8s/1m0s
+
+running (0m26.0s), 50/50 VUs, 154919 complete and 0 interrupted iterations
+constant_load   [  43% ] 50 VUs  0m25.8s/1m0s
+
+running (0m27.0s), 50/50 VUs, 161558 complete and 0 interrupted iterations
+constant_load   [  45% ] 50 VUs  0m26.8s/1m0s
+
+running (0m28.0s), 50/50 VUs, 168748 complete and 0 interrupted iterations
+constant_load   [  46% ] 50 VUs  0m27.8s/1m0s
+
+running (0m29.0s), 50/50 VUs, 175300 complete and 0 interrupted iterations
+constant_load   [  48% ] 50 VUs  0m28.8s/1m0s
+
+running (0m30.0s), 50/50 VUs, 182128 complete and 0 interrupted iterations
+constant_load   [  50% ] 50 VUs  0m29.8s/1m0s
+
+running (0m31.0s), 50/50 VUs, 188564 complete and 0 interrupted iterations
+constant_load   [  51% ] 50 VUs  0m30.8s/1m0s
+
+running (0m32.0s), 50/50 VUs, 196053 complete and 0 interrupted iterations
+constant_load   [  53% ] 50 VUs  0m31.8s/1m0s
+
+running (0m33.0s), 50/50 VUs, 203360 complete and 0 interrupted iterations
+constant_load   [  55% ] 50 VUs  0m32.8s/1m0s
+
+running (0m34.0s), 50/50 VUs, 209567 complete and 0 interrupted iterations
+constant_load   [  56% ] 50 VUs  0m33.8s/1m0s
+
+running (0m35.0s), 50/50 VUs, 215217 complete and 0 interrupted iterations
+constant_load   [  58% ] 50 VUs  0m34.8s/1m0s
+
+running (0m36.0s), 50/50 VUs, 220045 complete and 0 interrupted iterations
+constant_load   [  60% ] 50 VUs  0m35.8s/1m0s
+
+running (0m37.0s), 50/50 VUs, 225861 complete and 0 interrupted iterations
+constant_load   [  61% ] 50 VUs  0m36.8s/1m0s
+
+running (0m38.0s), 50/50 VUs, 232505 complete and 0 interrupted iterations
+constant_load   [  63% ] 50 VUs  0m37.8s/1m0s
+
+running (0m39.0s), 50/50 VUs, 238612 complete and 0 interrupted iterations
+constant_load   [  65% ] 50 VUs  0m38.8s/1m0s
+
+running (0m40.0s), 50/50 VUs, 245928 complete and 0 interrupted iterations
+constant_load   [  66% ] 50 VUs  0m39.8s/1m0s
+
+running (0m41.0s), 50/50 VUs, 253614 complete and 0 interrupted iterations
+constant_load   [  68% ] 50 VUs  0m40.8s/1m0s
+
+running (0m42.0s), 50/50 VUs, 261074 complete and 0 interrupted iterations
+constant_load   [  70% ] 50 VUs  0m41.8s/1m0s
+
+running (0m43.0s), 50/50 VUs, 268723 complete and 0 interrupted iterations
+constant_load   [  71% ] 50 VUs  0m42.8s/1m0s
+
+running (0m44.0s), 50/50 VUs, 276141 complete and 0 interrupted iterations
+constant_load   [  73% ] 50 VUs  0m43.8s/1m0s
+
+running (0m45.0s), 50/50 VUs, 282621 complete and 0 interrupted iterations
+constant_load   [  75% ] 50 VUs  0m44.8s/1m0s
+
+running (0m46.0s), 50/50 VUs, 289149 complete and 0 interrupted iterations
+constant_load   [  76% ] 50 VUs  0m45.8s/1m0s
+
+running (0m47.0s), 50/50 VUs, 296185 complete and 0 interrupted iterations
+constant_load   [  78% ] 50 VUs  0m46.8s/1m0s
+
+running (0m48.0s), 50/50 VUs, 303847 complete and 0 interrupted iterations
+constant_load   [  80% ] 50 VUs  0m47.8s/1m0s
+
+running (0m49.0s), 50/50 VUs, 310832 complete and 0 interrupted iterations
+constant_load   [  81% ] 50 VUs  0m48.8s/1m0s
+
+running (0m50.0s), 50/50 VUs, 317814 complete and 0 interrupted iterations
+constant_load   [  83% ] 50 VUs  0m49.8s/1m0s
+
+running (0m51.0s), 50/50 VUs, 324259 complete and 0 interrupted iterations
+constant_load   [  85% ] 50 VUs  0m50.8s/1m0s
+
+running (0m52.0s), 50/50 VUs, 331366 complete and 0 interrupted iterations
+constant_load   [  86% ] 50 VUs  0m51.8s/1m0s
+
+running (0m53.0s), 50/50 VUs, 338850 complete and 0 interrupted iterations
+constant_load   [  88% ] 50 VUs  0m52.8s/1m0s
+
+running (0m54.0s), 50/50 VUs, 345678 complete and 0 interrupted iterations
+constant_load   [  90% ] 50 VUs  0m53.8s/1m0s
+
+running (0m55.0s), 50/50 VUs, 352764 complete and 0 interrupted iterations
+constant_load   [  91% ] 50 VUs  0m54.8s/1m0s
+
+running (0m56.0s), 50/50 VUs, 358995 complete and 0 interrupted iterations
+constant_load   [  93% ] 50 VUs  0m55.8s/1m0s
+
+running (0m57.0s), 50/50 VUs, 365128 complete and 0 interrupted iterations
+constant_load   [  95% ] 50 VUs  0m56.8s/1m0s
+
+running (0m58.0s), 50/50 VUs, 371910 complete and 0 interrupted iterations
+constant_load   [  96% ] 50 VUs  0m57.8s/1m0s
+
+running (0m59.0s), 50/50 VUs, 378708 complete and 0 interrupted iterations
+constant_load   [  98% ] 50 VUs  0m58.8s/1m0s
+
+running (1m00.0s), 50/50 VUs, 385967 complete and 0 interrupted iterations
+constant_load   [ 100% ] 50 VUs  0m59.8s/1m0s
+time="2026-01-17T21:56:21+08:00" level=info msg="跳转性能测试完成" source=console
+
+
+  █ THRESHOLDS 
+
+    errors
+    ✓ 'rate<0.01' rate=0.02%
+
+    http_req_duration
+    ✓ 'p(50)<50' p(50)=6ms
+    ✓ 'p(95)<200' p(95)=14.8ms
+    ✓ 'p(99)<500' p(99)=25.61ms
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 1161870 19308.178783/s
+    checks_succeeded...: 99.99%  1161758 out of 1161870
+    checks_failed......: 0.00%   112 out of 1161870
+
+    ✓ 302 重定向
+    ✓ Location 头存在
+    ✗ 响应时间 < 100ms
+      ↳  99% — ✓ 387178 / ✗ 112
+
+    CUSTOM
+    errors.........................: 0.02%  112 out of 387290
+    redirect_latency...............: avg=7.04ms min=0s med=6ms    max=467.79ms p(90)=11.84ms p(95)=14.8ms 
+
+    HTTP
+    http_req_duration..............: avg=7.04ms min=0s med=6ms    max=467.79ms p(90)=11.84ms p(95)=14.8ms 
+      { expected_response:true }...: avg=7.04ms min=0s med=6ms    max=467.79ms p(90)=11.84ms p(95)=14.8ms 
+    http_req_failed................: 0.00%  0 out of 387310
+    http_reqs......................: 387310 6436.391958/s
+
+    EXECUTION
+    iteration_duration.............: avg=7.69ms min=0s med=6.15ms max=471.79ms p(90)=12.69ms p(95)=16.51ms
+    iterations.....................: 387290 6436.059594/s
+    vus............................: 50     min=50            max=50
+    vus_max........................: 50     min=50            max=50
+
+    NETWORK
+    data_received..................: 73 MB  1.2 MB/s
+    data_sent......................: 29 MB  476 kB/s
+
+
+
+
+running (1m00.2s), 00/50 VUs, 387290 complete and 0 interrupted iterations
+constant_load ✓ [ 100% ] 50 VUs  1m0s

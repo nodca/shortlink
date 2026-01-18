@@ -1,0 +1,220 @@
+@import "tailwindcss";
+
+/* ============================================
+   Theme Configuration (Tailwind v4 CSS-first)
+   ============================================ */
+@theme {
+  /* Primary colors - Refined Indigo-Blue */
+  --color-primary-50: #f0f4ff;
+  --color-primary-100: #e0e9ff;
+  --color-primary-200: #c2d3ff;
+  --color-primary-300: #94b2ff;
+  --color-primary-400: #5e84ff;
+  --color-primary-500: #3b66ff;
+  --color-primary-600: #2546eb;
+  --color-primary-700: #1d36d8;
+  --color-primary-800: #1e2faf;
+  --color-primary-900: #1e2a8a;
+
+  /* Font family */
+  --font-sans: "Inter var", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+
+  /* Shadow system */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-soft: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 10px -5px rgba(0, 0, 0, 0.02);
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  body {
+    @apply bg-[#fcfcfd] text-gray-900 antialiased font-sans selection:bg-primary-100 selection:text-primary-900;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      @apply bg-[#0b0f1a] text-slate-100 selection:bg-primary-900 selection:text-primary-100;
+    }
+  }
+
+  /* Focus ring */
+  input:focus,
+  button:focus {
+    @apply outline-none ring-2 ring-primary-500/20 ring-offset-0 transition-all;
+  }
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* ============================================
+   Component Styles
+   ============================================ */
+@layer components {
+  /* Card */
+  .card {
+    @apply bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden;
+  }
+  @media (prefers-color-scheme: dark) {
+    .card {
+      @apply bg-slate-900/50 border-white/5 backdrop-blur-sm shadow-2xl;
+    }
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply px-5 py-2.5 bg-primary-600 text-white font-semibold rounded-xl;
+    @apply hover:bg-primary-500 hover:shadow-lg hover:shadow-primary-500/20 active:scale-[0.98] transition-all;
+    @apply disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none;
+  }
+  @media (prefers-color-scheme: dark) {
+    .btn-primary {
+      @apply bg-primary-500 hover:bg-primary-400;
+      @apply disabled:bg-slate-800 disabled:text-slate-600;
+    }
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply px-5 py-2.5 bg-white text-gray-700 font-semibold rounded-xl;
+    @apply border border-gray-200 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98] transition-all;
+  }
+  @media (prefers-color-scheme: dark) {
+    .btn-secondary {
+      @apply bg-slate-800 text-slate-200 border-white/10 hover:bg-slate-700 hover:border-white/20;
+    }
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply px-4 py-2 text-gray-600 font-medium rounded-xl;
+    @apply hover:bg-gray-100 active:scale-[0.98] transition-all;
+  }
+  @media (prefers-color-scheme: dark) {
+    .btn-ghost {
+      @apply text-slate-400 hover:bg-white/5;
+    }
+  }
+
+  /* Input */
+  .input {
+    @apply w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl;
+    @apply placeholder:text-gray-400 transition-all;
+    @apply focus:bg-white focus:border-primary-500 focus:shadow-sm;
+  }
+  @media (prefers-color-scheme: dark) {
+    .input {
+      @apply bg-slate-800/50 border-white/10 placeholder:text-slate-500;
+      @apply focus:bg-slate-800 focus:border-primary-400;
+    }
+  }
+
+  .input-error {
+    @apply border-red-500 focus:border-red-500;
+  }
+  @media (prefers-color-scheme: dark) {
+    .input-error {
+      @apply border-red-400 focus:border-red-400;
+    }
+  }
+
+  /* Modal overlay */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50;
+    @apply opacity-0 pointer-events-none transition-opacity duration-200;
+  }
+
+  .modal-overlay.show {
+    @apply opacity-100 pointer-events-auto;
+  }
+
+  /* Modal content */
+  .modal-content {
+    @apply bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4;
+    @apply scale-95 transition-transform duration-200;
+  }
+  @media (prefers-color-scheme: dark) {
+    .modal-content {
+      @apply bg-slate-800;
+    }
+  }
+
+  .modal-overlay.show .modal-content {
+    @apply scale-100;
+  }
+
+  /* Link item */
+  .link-item {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow;
+  }
+  @media (prefers-color-scheme: dark) {
+    .link-item {
+      @apply bg-slate-800 border-slate-700;
+    }
+  }
+
+  /* Success card */
+  .result-card {
+    @apply bg-primary-50 border border-primary-200 rounded-xl p-6;
+  }
+  @media (prefers-color-scheme: dark) {
+    .result-card {
+      @apply bg-primary-900/20 border-primary-800;
+    }
+  }
+
+  /* Skeleton loading */
+  .skeleton {
+    @apply bg-gray-200 rounded animate-pulse;
+  }
+  @media (prefers-color-scheme: dark) {
+    .skeleton {
+      @apply bg-slate-700;
+    }
+  }
+}
+
+/* ============================================
+   Utility Styles
+   ============================================ */
+@layer utilities {
+  /* Text truncate */
+  .truncate-url {
+    @apply truncate max-w-full;
+  }
+
+  /* Hide scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

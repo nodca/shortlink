@@ -1,0 +1,97 @@
+---
+// ShortenerForm component - main URL input form
+---
+
+<section class="mb-12 text-center animate-slide-up">
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-950/30 border border-primary-100 dark:border-primary-900/50 text-primary-600 dark:text-primary-400 text-xs font-semibold mb-6">
+    <span class="relative flex h-2 w-2">
+      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+      <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+    </span>
+    极简 · 高效 · 安全
+  </div>
+
+  <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-6">
+    缩短你的 <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-indigo-600 dark:from-primary-400 dark:to-indigo-400">无限可能</span>
+  </h1>
+  <p class="text-lg text-gray-500 dark:text-slate-400 max-w-lg mx-auto mb-10">
+    让您的链接不仅更短，而且更具吸引力。集成实时统计与自定义短码。
+  </p>
+
+  <div class="card p-2 sm:p-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-gray-200/50 dark:border-white/10 shadow-2xl max-w-xl mx-auto">
+    <form id="shorten-form" class="relative group">
+      <div class="flex flex-col sm:flex-row gap-2">
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+          </div>
+          <input
+            type="url"
+            id="url-input"
+            class="w-full pl-11 pr-4 py-4 bg-transparent border-none focus:ring-0 text-gray-900 dark:text-white placeholder:text-gray-400 text-base"
+            placeholder="粘贴长链接..."
+            required
+          />
+        </div>
+        <button type="submit" id="submit-btn" class="btn-primary px-8 py-3 sm:py-2">
+          缩短
+        </button>
+      </div>
+
+      <!-- Custom code (optional) -->
+      <div class="mt-2 px-1">
+        <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50/60 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5">
+          <span class="text-gray-400 dark:text-slate-500 font-bold select-none">/</span>
+          <input
+            type="text"
+            id="code-input"
+            class="flex-1 bg-transparent border-none focus:ring-0 text-gray-900 dark:text-white placeholder:text-gray-400 text-sm"
+            placeholder="自定义短码（可选，3-32 位字母/数字）"
+            inputmode="latin"
+            autocomplete="off"
+            maxlength="32"
+            pattern="[A-Za-z0-9]{3,32}"
+          />
+        </div>
+        <p class="mt-2 text-[11px] text-gray-500 dark:text-slate-500 text-left px-1">
+          说明：仅支持字母/数字；若已被占用会提示冲突。
+        </p>
+      </div>
+    </form>
+  </div>
+
+  <!-- Advanced options toggle (Temporarily Disabled) -->
+  <!-- 
+  <div class="mt-6">
+    ...
+  </div>
+  -->
+
+  <!-- Error message -->
+  <div id="form-error" class="hidden mt-6 max-w-xl mx-auto">
+    <div class="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-sm">
+      <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <p id="error-text" class="font-medium"></p>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Toggle advanced options
+  const toggleBtn = document.getElementById('toggle-advanced');
+  const advancedPanel = document.getElementById('advanced-panel');
+  const advancedIcon = document.getElementById('advanced-icon');
+
+  toggleBtn?.addEventListener('click', () => {
+    const isHidden = advancedPanel?.classList.contains('hidden');
+    advancedPanel?.classList.toggle('hidden');
+    advancedIcon?.classList.toggle('rotate-180');
+  });
+</script>
