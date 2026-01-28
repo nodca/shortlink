@@ -1,0 +1,13 @@
+-- Add key replay/query columns to traces/spans for Phase 2.
+
+ALTER TABLE traces
+    ADD COLUMN IF NOT EXISTS input TEXT,
+    ADD COLUMN IF NOT EXISTS output TEXT,
+    ADD COLUMN IF NOT EXISTS tokens_in INT NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS tokens_out INT NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS cost DECIMAL(10,6) NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS duration_ms INT;
+
+ALTER TABLE spans
+    ADD COLUMN IF NOT EXISTS events JSONB NOT NULL DEFAULT '[]'::jsonb;
+

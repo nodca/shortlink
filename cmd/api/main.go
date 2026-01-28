@@ -15,10 +15,6 @@ import (
 
 	"day.local/gee"
 	"day.local/gee/middleware"
-	aiqueue "day.local/internal/app/aiworkbench/queue"
-	aihttpapi "day.local/internal/app/aiworkbench/httpapi"
-	airepo "day.local/internal/app/aiworkbench/repo"
-	aiworker "day.local/internal/app/aiworkbench/worker"
 	slcache "day.local/internal/app/shortlink/cache"
 	shortlinkhttpapi "day.local/internal/app/shortlink/httpapi"
 	"day.local/internal/app/shortlink/repo"
@@ -84,20 +80,10 @@ func main() {
 	}
 	slCache := slcache.NewShortlinkCache(redisClient, localCache)
 	defer slCache.Close()
+	//创建布隆过滤器 预期 100 万短码，1% 误判率
+	bloomFilter := slcache.NewBloomFilter(1_000_000, 0.01)
 
-	slRepo := repo.NewShortlinksRepo(dbPool, slCache)
-
-	// AI Workbench repos + queue
-	aiKeysRepo := airepo.NewAPIKeysRepo(dbPool)
-	aiRunsRepo := airepo.NewRunsRepo(dbPool)
-	aiResearchQueue, errAIQueue := aiqueue.NewResearchQueue(redisClient, aiqueue.ResearchQueueConfig{
-		Stream:   cfg.AIResearchStream,
-		Group:    cfg.AIResearchGroup,
-		Consumer: cfg.AIResearchConsumer,
-	})
-	if errAIQueue != nil {
-		log.Fatal(errAIQueue)
-	}
+	slRepo := repo.NewShortlinksRepo(dbPool, slCache, bloomFilter)
 
 	//初始化统计收集器（根据配置选择 Channel 或 Kafka）
 	var collector stats.Collector
@@ -150,7 +136,6 @@ func main() {
 	shortlinkhttpapi.RegisterWebRoutes(r)
 	shortlinkhttpapi.RegisterPublicRoutes(r, slRepo, collector, limiter)
 	shortlinkhttpapi.RegisterAPIRoutes(api, slRepo, usersRepo, ts, limiter)
-	aihttpapi.RegisterAPIRoutes(api, aiRunsRepo, aiKeysRepo, aiResearchQueue, ts, limiter)
 
 	r.GET("/healthz", func(ctx *gee.Context) {
 		ctx.String(http.StatusOK, "ok")
@@ -226,11 +211,6 @@ func main() {
 	// 启动 Channel consumer（如果启用）
 	if channelConsumer != nil {
 		go channelConsumer.Run(stopCtx)
-	}
-
-	// 启动 AI research worker
-	if cfg.AIWorkerEnabled {
-		go aiworker.NewResearchWorker(aiResearchQueue, aiRunsRepo).Run(stopCtx)
 	}
 	defer collector.Close()
 

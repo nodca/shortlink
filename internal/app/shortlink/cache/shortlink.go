@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"time"
 
+	"day.local/internal/platform/metrics"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -30,6 +31,11 @@ func (c *ShortlinkCache) Get(ctx context.Context, code string) (string, error) {
 	// L1: 本地缓存
 	if c.local != nil {
 		if url, ok := c.local.Get(code); ok {
+			if url == notFoundSentinel {
+				metrics.CacheOperations.WithLabelValues("l1", "hit_negative").Inc()
+			} else {
+				metrics.CacheOperations.WithLabelValues("l1", "hit").Inc()
+			}
 			return url, nil
 		}
 	}
@@ -38,10 +44,17 @@ func (c *ShortlinkCache) Get(ctx context.Context, code string) (string, error) {
 	key := "sl:" + code
 	res, err := c.client.Get(ctx, key).Result()
 	if err == redis.Nil {
+		metrics.CacheOperations.WithLabelValues("l2", "miss").Inc()
 		return "", nil // 缓存未命中
 	}
 	if err != nil {
 		return "", err
+	}
+	// L2 命中
+	if res == notFoundSentinel {
+		metrics.CacheOperations.WithLabelValues("l2", "hit_negative").Inc()
+	} else {
+		metrics.CacheOperations.WithLabelValues("l2", "hit").Inc()
 	}
 
 	// 回填本地缓存

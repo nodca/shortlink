@@ -20,3 +20,28 @@ internal/app/shortlink/web/node_modules/
 internal/app/shortlink/web/dist/
 internal/app/shortlink/web/.astro/
 
+# Local distribution outputs
+dist/
+
+# Production config (sensitive)
+docker-compose.prod.yml
+
+# Environment files (sensitive)
+.env
+.gemini/
+
+# Documentation (not open sourced)
+docs/
+*.md
+!README.md
+
+# Claude / AI assistant files
+.claude/
+
+# Temporary files
+tmp/
+nul
+*.log
+
+# UI (if not ready for open source)
+# ui/

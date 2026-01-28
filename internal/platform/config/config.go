@@ -50,11 +50,21 @@ type Config struct {
 	// RateLimit
 	RateLimitEnabled bool `env:"RATELIMIT_ENABLED" envDefault:"true"`
 
-	// AI Workbench
-	AIWorkerEnabled  bool
-	AIResearchStream string
-	AIResearchGroup  string
-	AIResearchConsumer string
+	// AIFlow
+	AIFlowEnabled   bool   `env:"AIFLOW_ENABLED" envDefault:"true"`
+	DeepSeekAPIKey  string `env:"DEEPSEEK_API_KEY"`
+	DeepSeekBaseURL string `env:"DEEPSEEK_BASEURL" envDefault:"https://api.siliconflow.cn/v1"`
+	DeepSeekModel   string `env:"DEEPSEEK_MODEL" envDefault:"deepseek-ai/DeepSeek-V3.2"`
+	SerpAPIKey      string `env:"SERPAPI_KEY"`
+
+	EmbeddingAPIKey  string `env:"EMBEDDING_API_KEY"`
+	EmbeddingBaseURL string `env:"EMBEDDING_BASEURL" envDefault:"https://api.siliconflow.cn/v1"`
+	EmbeddingModel   string `env:"EMBEDDING_MODEL" envDefault:"BAAI/bge-m3"`
+
+	AIFlowAgentTimeout        time.Duration
+	AIFlowToolTimeout         time.Duration
+	AIFlowObservationMaxBytes int
+	AIFlowCostPer1KTokens     float64
 }
 
 func Load() Config {
@@ -93,10 +103,18 @@ func Load() Config {
 
 		RateLimitEnabled: true,
 
-		AIWorkerEnabled:    true,
-		AIResearchStream:   "ai:jobs:research",
-		AIResearchGroup:    "ai:workers:research",
-		AIResearchConsumer: "worker-1",
+		// AIFlow
+		AIFlowEnabled:   true,
+		DeepSeekBaseURL: "https://api.siliconflow.cn/v1",
+		DeepSeekModel:   "deepseek-ai/DeepSeek-V3.2",
+
+		EmbeddingBaseURL: "https://api.siliconflow.cn/v1",
+		EmbeddingModel:   "BAAI/bge-m3",
+
+		AIFlowAgentTimeout:        120 * time.Second,
+		AIFlowToolTimeout:         20 * time.Second,
+		AIFlowObservationMaxBytes: 8 * 1024,
+		AIFlowCostPer1KTokens:     0,
 	}
 
 	_ = godotenv.Load(".env")
@@ -207,18 +225,53 @@ func Load() Config {
 		cfg.RateLimitEnabled = strings.ToLower(v) == "true"
 	}
 
-	// AI Workbench
-	if v, ok := os.LookupEnv("AI_WORKER_ENABLED"); ok && v != "" {
-		cfg.AIWorkerEnabled = strings.ToLower(v) == "true"
+	// AIFlow
+	if v, ok := os.LookupEnv("AIFLOW_ENABLED"); ok && v != "" {
+		cfg.AIFlowEnabled = strings.ToLower(v) == "true"
 	}
-	if v, ok := os.LookupEnv("AI_RESEARCH_STREAM"); ok && v != "" {
-		cfg.AIResearchStream = v
+	if v, ok := os.LookupEnv("DEEPSEEK_API_KEY"); ok && v != "" {
+		cfg.DeepSeekAPIKey = v
 	}
-	if v, ok := os.LookupEnv("AI_RESEARCH_GROUP"); ok && v != "" {
-		cfg.AIResearchGroup = v
+	if v, ok := os.LookupEnv("DEEPSEEK_BASEURL"); ok && v != "" {
+		cfg.DeepSeekBaseURL = v
 	}
-	if v, ok := os.LookupEnv("AI_RESEARCH_CONSUMER"); ok && v != "" {
-		cfg.AIResearchConsumer = v
+	if v, ok := os.LookupEnv("DEEPSEEK_MODEL"); ok && v != "" {
+		cfg.DeepSeekModel = v
+	}
+	if v, ok := os.LookupEnv("SERPAPI_KEY"); ok && v != "" {
+		cfg.SerpAPIKey = v
+	}
+
+	if v, ok := os.LookupEnv("AIFLOW_AGENT_TIMEOUT"); ok && v != "" {
+		if d, err := time.ParseDuration(v); err == nil {
+			cfg.AIFlowAgentTimeout = d
+		}
+	}
+	if v, ok := os.LookupEnv("AIFLOW_TOOL_TIMEOUT"); ok && v != "" {
+		if d, err := time.ParseDuration(v); err == nil {
+			cfg.AIFlowToolTimeout = d
+		}
+	}
+	if v, ok := os.LookupEnv("AIFLOW_OBSERVATION_MAX_BYTES"); ok && v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			cfg.AIFlowObservationMaxBytes = n
+		}
+	}
+	if v, ok := os.LookupEnv("AIFLOW_COST_PER_1K_TOKENS"); ok && v != "" {
+		if f, err := strconv.ParseFloat(v, 64); err == nil && f >= 0 {
+			cfg.AIFlowCostPer1KTokens = f
+		}
+	}
+
+	// Embedding
+	if v, ok := os.LookupEnv("EMBEDDING_API_KEY"); ok && v != "" {
+		cfg.EmbeddingAPIKey = v
+	}
+	if v, ok := os.LookupEnv("EMBEDDING_BASEURL"); ok && v != "" {
+		cfg.EmbeddingBaseURL = v
+	}
+	if v, ok := os.LookupEnv("EMBEDDING_MODEL"); ok && v != "" {
+		cfg.EmbeddingModel = v
 	}
 
 	return cfg

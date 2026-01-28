@@ -55,6 +55,66 @@ var (
 			Help: "Current number of in-flight HTTP requests.",
 		},
 	)
+	// ========== 缓存指标 ==========
+
+	// CacheOperations：缓存操作计数
+	// labels:
+	// - level: "l1"（本地）或 "l2"（Redis）
+	// - result: "hit"（命中）、"miss"（未命中）、"hit_negative"（命中负缓存）
+	CacheOperations = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "shortlink_cache_operations_total",
+			Help: "缓存操作计数",
+		},
+		[]string{"level", "result"},
+	)
+	// ========== 短链业务指标 ==========
+
+	// ShortlinkCreated：短链创建计数
+	ShortlinkCreated = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "shortlink_created_total",
+			Help: "创建的短链总数",
+		},
+	)
+
+	// ShortlinkRedirects：短链跳转计数
+	ShortlinkRedirects = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "shortlink_redirects_total",
+			Help: "短链跳转总数",
+		},
+	)
+
+	// ========== 数据库指标 ==========
+
+	// DBQueryDuration：数据库查询耗时
+	// labels:
+	// - operation: "resolve"、"create"、"find" 等
+	DBQueryDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "shortlink_db_query_duration_seconds",
+			Help:    "数据库查询耗时分布",
+			Buckets: []float64{0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1},
+		},
+		[]string{"operation"},
+	)
+	// StatsFlushDuration：统计写入耗时
+	StatsFlushDuration = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:    "shortlink_stats_flush_duration_seconds",
+			Help:    "统计批量写入耗时",
+			Buckets: []float64{0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1},
+		},
+	)
+	// StatsFlushSize：每次 flush 的批量大小
+	StatsFlushSize = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:    "shortlink_stats_flush_size",
+			Help:    "每次 flush 的事件数量",
+			Buckets: []float64{1, 10, 25, 50, 75, 100, 150, 200},
+		},
+	)
 )
 
 // Init 注册指标：只允许注册一次（否则 panic: duplicate metrics collector registration）
@@ -64,6 +124,12 @@ func Init() {
 			HTTPRequestsTotal,
 			HTTPRequestDurationSeconds,
 			HTTPInflightRequests,
+			CacheOperations,
+			ShortlinkCreated,
+			ShortlinkRedirects,
+			DBQueryDuration,
+			StatsFlushDuration,
+			StatsFlushSize,
 		)
 	})
 }

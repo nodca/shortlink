@@ -9,6 +9,7 @@ import (
 
 	"day.local/internal/app/shortlink"
 	"day.local/internal/app/shortlink/cache"
+	"day.local/internal/platform/metrics"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -37,13 +38,39 @@ type UserShortlink struct {
 type ShortlinksRepo struct {
 	db    *pgxpool.Pool
 	cache *cache.ShortlinkCache
+	bloom *cache.BloomFilter
 }
 
-func NewShortlinksRepo(db *pgxpool.Pool, cache *cache.ShortlinkCache) *ShortlinksRepo {
-	return &ShortlinksRepo{
+func NewShortlinksRepo(db *pgxpool.Pool, cache *cache.ShortlinkCache, bloom *cache.BloomFilter) *ShortlinksRepo {
+	repo := &ShortlinksRepo{
 		db:    db,
 		cache: cache,
+		bloom: bloom,
 	}
+	// 初始化布隆过滤器
+	if bloom != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		rows, err := db.Query(ctx, "SELECT code FROM shortlinks WHERE code IS NOT NULL")
+		if err != nil {
+			slog.Error("bloom filter: load codes failed", "err", err)
+			return repo
+		}
+		defer rows.Close()
+
+		count := 0
+		for rows.Next() {
+			var code string
+			if err := rows.Scan(&code); err != nil {
+				continue
+			}
+			bloom.Add(code)
+			count++
+		}
+		slog.Info("bloom filter initialized", "count", count)
+	}
+	return repo
 }
 
 /*
@@ -106,6 +133,11 @@ func (s *ShortlinksRepo) Create(ctx context.Context, url string, createdBy *int6
 	if err := tx.Commit(dbctx); err != nil {
 		slog.Error(err.Error())
 		return "", err
+	}
+
+	metrics.ShortlinkCreated.Inc()
+	if s.bloom != nil && code != "" {
+		s.bloom.Add(code)
 	}
 
 	// 写缓存/覆盖负缓存：创建成功后立刻写入，避免此前命中 "__nil__" 导致短码暂时不可用。
@@ -192,6 +224,10 @@ func (s *ShortlinksRepo) CreateWithCustomCode(ctx context.Context, url string, c
 		slog.Error(err.Error())
 		return "", err
 	}
+	// 添加到布隆过滤器
+	if s.bloom != nil && code != "" {
+		s.bloom.Add(code)
+	}
 
 	// 写缓存/覆盖负缓存：自定义短码创建成功后立刻写入。
 	if s.cache != nil && gotCode != "" {
@@ -205,6 +241,12 @@ func (s *ShortlinksRepo) CreateWithCustomCode(ctx context.Context, url string, c
 
 // 用户访问短码 code,返回对应的长链接url
 func (s *ShortlinksRepo) Resolve(ctx context.Context, code string) string {
+	//布隆过滤器判断
+	if s.bloom != nil && !s.bloom.MightExist(code) {
+		// 一定不存在，直接返回
+		return ""
+	}
+
 	//先查缓存
 	if s.cache != nil {
 		if url, _ := s.cache.Get(ctx, code); url != "" {
@@ -216,11 +258,15 @@ func (s *ShortlinksRepo) Resolve(ctx context.Context, code string) string {
 	}
 
 	//查数据库
+	// 查数据库时记录耗时
+	dbStart := time.Now()
+
 	dbctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
 	rows := s.db.QueryRow(dbctx, "SELECT url FROM shortlinks WHERE code=$1 AND disabled=false", code)
 	var url string
 	if err := rows.Scan(&url); err != nil {
+		metrics.DBQueryDuration.WithLabelValues("resolve").Observe(time.Since(dbStart).Seconds())
 		if errors.Is(err, pgx.ErrNoRows) {
 			if s.cache != nil {
 				s.cache.SetNotFound(ctx, code)
@@ -231,6 +277,7 @@ func (s *ShortlinksRepo) Resolve(ctx context.Context, code string) string {
 		}
 		return ""
 	}
+	metrics.DBQueryDuration.WithLabelValues("resolve").Observe(time.Since(dbStart).Seconds())
 
 	//写缓存
 	if s.cache != nil && url != "" {
@@ -416,4 +463,23 @@ func (u *ShortlinksRepo) UserOwnsShortlink(ctx context.Context, userID int64, co
 		return false, err
 	}
 	return exists, nil
+}
+
+// LoadAllCodes 加载所有短码（用于初始化布隆过滤器）
+func (u *ShortlinksRepo) LoadAllCodes(ctx context.Context) ([]string, error) {
+	rows, err := u.db.Query(ctx, "SELECT code FROM shortlinks WHERE code IS NOT NULL")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var codes []string
+	for rows.Next() {
+		var code string
+		if err := rows.Scan(&code); err != nil {
+			return nil, err
+		}
+		codes = append(codes, code)
+	}
+	return codes, rows.Err()
 }

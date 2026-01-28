@@ -1,0 +1,25 @@
+# Prometheus 配置文件
+# 文档: https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+
+global:
+  scrape_interval: 15s      # 每 15 秒抓取一次指标
+  evaluation_interval: 15s  # 每 15 秒评估一次规则
+
+scrape_configs:
+  # Prometheus 自身指标
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # 短链接服务指标
+  # 你的服务在 admin 端口 (6060) 暴露 /metrics
+  - job_name: 'shortlink'
+    static_configs:
+      # Windows Docker Desktop 用 host.docker.internal 访问宿主机
+      # Linux 用 172.17.0.1 或 host 网络模式
+      - targets: ['host.docker.internal:6060']
+    # 可选：添加标签区分环境
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'shortlink-dev'

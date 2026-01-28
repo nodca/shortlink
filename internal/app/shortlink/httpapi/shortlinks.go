@@ -14,6 +14,7 @@ import (
 	"day.local/internal/app/shortlink/stats"
 	"day.local/internal/platform/auth"
 	"day.local/internal/platform/httpmiddleware"
+	"day.local/internal/platform/metrics"
 )
 
 // NOTE: 本包目前是短链 MVP handlers 的占位。
@@ -117,6 +118,8 @@ func NewRedirectHandler(r *repo.ShortlinksRepo, collector stats.Collector) gee.H
 			ctx.AbortWithError(http.StatusNotFound, "url not found")
 			return
 		}
+		// 记录跳转
+		metrics.ShortlinkRedirects.Inc()
 
 		//异步记录点击
 		collector.Collect(stats.ClickEvent{

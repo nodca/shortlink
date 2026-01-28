@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"sync/atomic"
 	"strconv"
 	"strings"
 	"time"
@@ -12,6 +13,8 @@ import (
 	"day.local/gee"
 	"day.local/internal/platform/ratelimit"
 )
+
+var rateLimitMemberSeq uint64
 
 // ClientIP 获取“真实客户端 IP”（用于限流/审计/统计）。
 //
@@ -97,7 +100,8 @@ func RateLimit(limiter *ratelimit.Limiter, prefix string, limit int, window time
 			return
 		}
 		// member 必须“每次请求唯一”，否则 ZADD 会覆盖同一个 member。
-		member := strconv.FormatInt(time.Now().UnixNano(), 10)
+		// 在 Windows/虚拟化环境中 time.Now().UnixNano() 可能短时间内重复；加序列号保证唯一。
+		member := strconv.FormatInt(time.Now().UnixNano(), 10) + "-" + strconv.FormatUint(atomic.AddUint64(&rateLimitMemberSeq, 1), 10)
 		rlCtx, cancel := context.WithTimeout(ctx.Req.Context(), 50*time.Millisecond)
 		defer cancel()
 		allowed, retryAfter, err := limiter.Allow(rlCtx, key, limit, window, member)
