@@ -1,6 +1,6 @@
 # Days
 
-一个基于仿 Gin 轻量级 Web 框架构建的 Go Web 应用，包含短链接服务及数据分析功能。
+一个 Go Web 应用，包含短链接服务及数据分析功能。Web 框架基于[极客兔兔老师的 gee 框架](https://geektutu.com/post/gee.html)改进。
 
 **在线体验**：[s.cyb1.org](https://s.cyb1.org)
 
@@ -28,7 +28,7 @@
 ```
 ├── cmd/
 │   └── api/              # 应用入口
-├── gee/                  # 仿 Gin 轻量级 Web 框架
+├── gee/                  # Web 框架（基于极客兔兔老师的 gee 框架改进）
 ├── internal/
 │   ├── app/
 │   │   └── shortlink/    # 短链接业务逻辑
