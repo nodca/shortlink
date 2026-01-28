@@ -1,6 +1,6 @@
 # Days
 
-一个基于自研轻量级 Web 框架构建的 Go Web 应用，包含短链接服务及数据分析功能。
+一个基于仿 Gin 轻量级 Web 框架构建的 Go Web 应用，包含短链接服务及数据分析功能。
 
 ## 功能特性
 
@@ -13,7 +13,7 @@
 
 ## 技术栈
 
-- **语言**：Go 1.21+
+- **语言**：Go 1.24+
 - **数据库**：PostgreSQL
 - **缓存**：Redis
 - **消息队列**：Kafka（可选）
@@ -26,7 +26,7 @@
 ```
 ├── cmd/
 │   └── api/              # 应用入口
-├── gee/                  # 自研轻量级 Web 框架
+├── gee/                  # 仿 Gin 轻量级 Web 框架
 ├── internal/
 │   ├── app/
 │   │   └── shortlink/    # 短链接业务逻辑
@@ -40,7 +40,7 @@
 
 ### 环境要求
 
-- Go 1.21+
+- Go 1.24+
 - PostgreSQL
 - Redis
 - Docker & Docker Compose（可选）
