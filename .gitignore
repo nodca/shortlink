@@ -43,5 +43,8 @@ tmp/
 nul
 *.log
 
+# Playground (not open sourced)
+playground/
+
 # UI (if not ready for open source)
 # ui/
