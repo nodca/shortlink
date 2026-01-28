@@ -69,7 +69,7 @@ cp .env.example .env
 docker-compose up -d
 ```
 
-4. 运行数据库迁移（启动时自动执行或手动执行）。
+4. 手动运行数据库迁移（按顺序执行 `migrations/` 目录下的 SQL 文件）。
 
 5. 启动应用：
 
