@@ -1,14 +1,20 @@
 package gee
 
 import (
-	"log"
+	"log/slog"
 	"time"
 )
 
 func Logger() HandlerFunc {
 	return func(ctx *Context) {
-		t := time.Now()
+		start := time.Now()
 		ctx.Next()
-		log.Printf("[%d] %s in %v,write size= %v", ctx.Writer.Status(), ctx.Req.RequestURI, time.Since(t).Microseconds(), ctx.Writer.Size())
+		slog.Info("request",
+			"status", ctx.Writer.Status(),
+			"method", ctx.Method,
+			"path", ctx.Req.RequestURI,
+			"latency_us", time.Since(start).Microseconds(),
+			"bytes", ctx.Writer.Size(),
+		)
 	}
 }

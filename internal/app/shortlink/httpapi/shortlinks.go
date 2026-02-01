@@ -2,9 +2,7 @@ package httpapi
 
 import (
 	"errors"
-	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -12,7 +10,6 @@ import (
 	"day.local/internal/app/shortlink"
 	"day.local/internal/app/shortlink/repo"
 	"day.local/internal/app/shortlink/stats"
-	"day.local/internal/platform/auth"
 	"day.local/internal/platform/httpmiddleware"
 	"day.local/internal/platform/metrics"
 )
@@ -44,7 +41,6 @@ func NewCreateHandler(r *repo.ShortlinksRepo) gee.HandlerFunc {
 	return func(ctx *gee.Context) {
 		var req ShortLinksRequest
 		if err := ctx.BindJSON(&req); err != nil {
-			ctx.AbortWithError(http.StatusBadRequest, "invalid json")
 			return
 		}
 		if err := shortlink.ValidateURL(req.URL); err != nil {
@@ -59,17 +55,9 @@ func NewCreateHandler(r *repo.ShortlinksRepo) gee.HandlerFunc {
 			}
 		}
 
-		var userID *int64
-		identity, ok := auth.GetIdentity(ctx.Req.Context())
-		if ok {
-			var err error
-			userID = new(int64)
-			*userID, err = strconv.ParseInt(identity.UserID, 10, 64)
-			if err != nil {
-				slog.Error(err.Error())
-				ctx.AbortWithError(http.StatusInternalServerError, err.Error())
-				return
-			}
+		userID, ok := tryGetUserID(ctx)
+		if !ok {
+			return
 		}
 
 		var code string
@@ -174,18 +162,12 @@ func NewDisablesHandler(r *repo.ShortlinksRepo) gee.HandlerFunc {
 func NewRemoveFromMineHandler(r *repo.ShortlinksRepo) gee.HandlerFunc {
 	return func(ctx *gee.Context) {
 		code := ctx.Param("code")
-		identity, ok := auth.GetIdentity(ctx.Req.Context())
+		userID, ok := mustGetUserID(ctx)
 		if !ok {
-			ctx.AbortWithError(http.StatusUnauthorized, "Not Login")
 			return
 		}
-		id, err := strconv.ParseInt(identity.UserID, 10, 64)
-		if err != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, err.Error())
-			return
-		}
-		if err := r.RemoveFromUserList(ctx.Req.Context(), id, code); err != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, err.Error())
+		if err := r.RemoveFromUserList(ctx.Req.Context(), userID, code); err != nil {
+			ctx.AbortWithError(http.StatusInternalServerError, "internal error")
 			return
 		}
 		ctx.Status(http.StatusOK)

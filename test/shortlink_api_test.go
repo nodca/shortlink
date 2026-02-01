@@ -46,7 +46,7 @@ func setupTestServer(t *testing.T) (*gee.Engine, *repo.ShortlinksRepo, *repo.Use
 	}
 
 	// Create repos
-	slRepo := repo.NewShortlinksRepo(dbPool, nil)
+	slRepo := repo.NewShortlinksRepo(dbPool, nil, nil)
 	usersRepo := repo.NewUsersRepo(dbPool)
 
 	// Create JWT service

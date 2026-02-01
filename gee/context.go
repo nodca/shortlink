@@ -46,7 +46,7 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 func (c *Context) Next() {
 	c.index++
 	s := len(c.handlers)
-	for ; c.index < s; c.index++ {
+	for ; c.index < s && !c.IsAborted(); c.index++ {
 		c.handlers[c.index](c)
 	}
 }

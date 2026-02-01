@@ -60,7 +60,7 @@ func setupPostgresAndRedis(t *testing.T) (*repo.ShortlinksRepo, *pgxpool.Pool, *
 	}
 
 	cache := slcache.NewShortlinkCache(redisClient, nil)
-	slRepo := repo.NewShortlinksRepo(dbPool, cache)
+	slRepo := repo.NewShortlinksRepo(dbPool, cache, nil)
 
 	cleanup := func() {
 		_ = redisClient.Close()

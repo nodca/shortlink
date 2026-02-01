@@ -2,7 +2,7 @@ package gee
 
 import (
 	"html/template"
-	"log"
+	"log/slog"
 	"net/http"
 	"path"
 	"strings"
@@ -17,22 +17,23 @@ type Engine struct {
 	noMethod      []HandlerFunc
 	noRoute       []HandlerFunc
 }
+
 type RouterGroup struct {
-	prefix       string
-	middilewares []HandlerFunc
-	parent       *RouterGroup
-	engine       *Engine //使其能访问到所属的eigen
+	prefix      string
+	middlewares []HandlerFunc
+	parent      *RouterGroup
+	engine      *Engine
 }
 
 func New() *Engine {
-	eigen := &Engine{
+	engine := &Engine{
 		router: newRouter(),
 	}
-	eigen.noRoute = []HandlerFunc{func(ctx *Context) { ctx.String(http.StatusNotFound, "404 NOT FOUND %s", ctx.Path) }}
-	eigen.noMethod = []HandlerFunc{func(ctx *Context) { ctx.String(http.StatusMethodNotAllowed, "405 Method Not Allowed %s", ctx.Path) }}
-	eigen.RouterGroup = &RouterGroup{engine: eigen}
-	eigen.groups = []*RouterGroup{eigen.RouterGroup}
-	return eigen
+	engine.noRoute = []HandlerFunc{func(ctx *Context) { ctx.String(http.StatusNotFound, "404 NOT FOUND %s", ctx.Path) }}
+	engine.noMethod = []HandlerFunc{func(ctx *Context) { ctx.String(http.StatusMethodNotAllowed, "405 Method Not Allowed %s", ctx.Path) }}
+	engine.RouterGroup = &RouterGroup{engine: engine}
+	engine.groups = []*RouterGroup{engine.RouterGroup}
+	return engine
 }
 
 func Default() *Engine {
@@ -41,20 +42,20 @@ func Default() *Engine {
 	return engine
 }
 
-func (eigen *Engine) NoRoute(handlers ...HandlerFunc) {
-	eigen.noRoute = handlers
+func (e *Engine) NoRoute(handlers ...HandlerFunc) {
+	e.noRoute = handlers
 }
 
-func (eigen *Engine) NoMethod(handlers ...HandlerFunc) {
-	eigen.noMethod = handlers
+func (e *Engine) NoMethod(handlers ...HandlerFunc) {
+	e.noMethod = handlers
 }
 
-func (engine *Engine) SetFuncMap(funcMap template.FuncMap) {
-	engine.funcMap = funcMap
+func (e *Engine) SetFuncMap(funcMap template.FuncMap) {
+	e.funcMap = funcMap
 }
 
-func (engine *Engine) LoadHTMLGlob(pattern string) {
-	engine.htmlTemplates = template.Must(template.New("").Funcs(engine.funcMap).ParseGlob(pattern))
+func (e *Engine) LoadHTMLGlob(pattern string) {
+	e.htmlTemplates = template.Must(template.New("").Funcs(e.funcMap).ParseGlob(pattern))
 }
 
 func (group *RouterGroup) Group(prefix string) *RouterGroup {
@@ -68,14 +69,14 @@ func (group *RouterGroup) Group(prefix string) *RouterGroup {
 	return newGroup
 }
 
-// 添加中间件
-func (group *RouterGroup) Use(middleware ...HandlerFunc) {
-	group.middilewares = append(group.middilewares, middleware...)
+// Use 添加中间件
+func (group *RouterGroup) Use(middlewares ...HandlerFunc) {
+	group.middlewares = append(group.middlewares, middlewares...)
 }
 
 func (group *RouterGroup) addRoute(method string, comp string, handlers ...HandlerFunc) {
 	pattern := group.prefix + comp
-	log.Printf("Route %4s - %s", method, pattern)
+	slog.Debug("route registered", "method", method, "pattern", pattern)
 	group.engine.router.addRoute(method, pattern, handlers...)
 }
 
@@ -89,7 +90,7 @@ func (group *RouterGroup) POST(pattern string, handlers ...HandlerFunc) {
 	group.addRoute("POST", pattern, handlers...)
 }
 
-// DELETE
+// DELETE defines the method to add DELETE request
 func (group *RouterGroup) DELETE(pattern string, handlers ...HandlerFunc) {
 	group.addRoute("DELETE", pattern, handlers...)
 }
@@ -99,7 +100,6 @@ func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileS
 	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
 	return func(ctx *Context) {
 		file := ctx.Param("filepath")
-
 		if _, err := fs.Open(file); err != nil {
 			ctx.Status(http.StatusNotFound)
 			return
@@ -108,28 +108,28 @@ func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileS
 	}
 }
 
-// serve static files
+// Static serves static files
 func (group *RouterGroup) Static(relativePath string, root string) {
 	handler := group.createStaticHandler(relativePath, http.Dir(root))
 	urlPattern := path.Join(relativePath, "/*filepath")
-	// Register GET handlers
 	group.GET(urlPattern, handler)
 }
 
-// http.ListenAndServe(addr string, handler http.Handler)，handler 需要重写ServeHTTP函数，
+// ServeHTTP implements http.Handler interface
 func (e *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	var middilewares []HandlerFunc
+	var middlewares []HandlerFunc
 	for _, group := range e.groups {
 		if strings.HasPrefix(req.URL.Path, group.prefix) {
-			middilewares = append(middilewares, group.middilewares...)
+			middlewares = append(middlewares, group.middlewares...)
 		}
 	}
-	c := newContext(w, req)
-	c.handlers = middilewares
-	c.engine = e
-	e.router.handle(c)
+	ctx := newContext(w, req)
+	ctx.handlers = middlewares
+	ctx.engine = e
+	e.router.handle(ctx)
 }
 
-func (e *Engine) Run(addr string) (err error) {
+// Run starts the HTTP server
+func (e *Engine) Run(addr string) error {
 	return http.ListenAndServe(addr, e)
 }

@@ -104,21 +104,14 @@ func NewUserMeHandler() gee.HandlerFunc {
 
 func NewMineHandler(r *repo.ShortlinksRepo) gee.HandlerFunc {
 	return func(ctx *gee.Context) {
-		identiy, ok := auth.GetIdentity(ctx.Req.Context())
+		userID, ok := mustGetUserID(ctx)
 		if !ok {
-			ctx.AbortWithError(http.StatusUnauthorized, "Not login")
-			return
-		}
-		userID, err := strconv.ParseInt(identiy.UserID, 10, 64)
-		if err != nil {
-			slog.Error(err.Error())
-			ctx.AbortWithError(http.StatusInternalServerError, err.Error())
 			return
 		}
 		list, err := r.ListByUserID(ctx.Req.Context(), userID, 50)
 		if err != nil {
-			slog.Error(err.Error())
-			ctx.AbortWithError(http.StatusInternalServerError, err.Error())
+			slog.Error("list user shortlinks failed", "user_id", userID, "err", err)
+			ctx.AbortWithError(http.StatusInternalServerError, "internal error")
 			return
 		}
 		ctx.JSON(http.StatusOK, list)
@@ -128,21 +121,14 @@ func NewMineHandler(r *repo.ShortlinksRepo) gee.HandlerFunc {
 func NewGetStatsHandler(r *repo.ShortlinksRepo) gee.HandlerFunc {
 	return func(ctx *gee.Context) {
 		code := ctx.Param("code")
-		// 获取用户身份
-		identity, ok := auth.GetIdentity(ctx.Req.Context())
+		userID, ok := mustGetUserID(ctx)
 		if !ok {
-			ctx.AbortWithError(http.StatusUnauthorized, "not login")
-			return
-		}
-		userID, err := strconv.ParseInt(identity.UserID, 10, 64)
-		if err != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, err.Error())
 			return
 		}
 		// 检查权限
 		owns, err := r.UserOwnsShortlink(ctx.Req.Context(), userID, code)
 		if err != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, err.Error())
+			ctx.AbortWithError(http.StatusInternalServerError, "internal error")
 			return
 		}
 		if !owns {
@@ -159,7 +145,7 @@ func NewGetStatsHandler(r *repo.ShortlinksRepo) gee.HandlerFunc {
 				return
 			}
 		}
-		var cursor int64 = 0 //默认 0（表示第一页）
+		var cursor int64 = 0
 		if c := ctx.Query("cursor"); c != "" {
 			if n, err := strconv.ParseInt(c, 10, 64); err == nil && n > 0 {
 				cursor = n
@@ -171,8 +157,8 @@ func NewGetStatsHandler(r *repo.ShortlinksRepo) gee.HandlerFunc {
 
 		stats, err := r.ListStatsByCode(ctx.Req.Context(), code, limit, cursor)
 		if err != nil {
-			slog.Error(err.Error())
-			ctx.AbortWithError(http.StatusInternalServerError, err.Error())
+			slog.Error("list stats failed", "code", code, "err", err)
+			ctx.AbortWithError(http.StatusInternalServerError, "internal error")
 			return
 		}
 		ctx.JSON(http.StatusOK, stats)
